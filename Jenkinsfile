@@ -4,7 +4,9 @@ pipeline {
     
     stages {
 
-        
+        tools {
+        nodejs 'NodeJS 26'
+    }
 
         stage('Build Docker Image') {
             steps {
