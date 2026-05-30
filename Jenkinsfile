@@ -28,7 +28,7 @@ pipeline {
                 docker run -d \
                 --name nodejs-demo \
                 -p 3000:3000 \
-                nodejs-demo:$BUILD_VERSION
+                nodejs-demo:latest
                 '''
             }
         }
