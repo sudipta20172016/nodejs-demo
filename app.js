@@ -19,5 +19,5 @@ app.get('/version', (req, res) => {
 
 // Listn thius test tool new build one more
 app.listen(port, () => {
-    console.log(`Server running on port ${port}, version1 ${appVersion}`);
+    console.log(`Server running on port ${port}, version Test ${appVersion}`);
 });
