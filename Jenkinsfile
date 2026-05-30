@@ -1,12 +1,13 @@
 pipeline {
     agent any
 
+     tools {
+        nodejs 'NodeJS 26'
+    }
     
     stages {
 
-        tools {
-        nodejs 'NodeJS 26'
-    }
+       
 
         stage('Build Docker Image') {
             steps {
