@@ -5,7 +5,10 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t nodejs-demo .'
+                sh '''
+                APP_VERSION=$(node -p "require('./package.json').version")
+                docker build --build-arg APP_VERSION=$APP_VERSION -t nodejs-demo:$APP_VERSION -t nodejs-demo:latest .
+                '''
             }
         }
 
@@ -18,7 +21,7 @@ pipeline {
                 docker run -d \
                 --name nodejs-demo \
                 -p 3000:3000 \
-                nodejs-demo
+                nodejs-demo:latest
                 '''
             }
         }
