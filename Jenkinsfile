@@ -1,13 +1,7 @@
 pipeline {
-    agent any
+    agent anys
 
     stages {
-
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/sudipta20172016/nodejs-demo.git'
-            }
-        }
 
         stage('Build Docker Image') {
             steps {
