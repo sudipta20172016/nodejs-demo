@@ -6,7 +6,7 @@ app.get('/', (req, res) => {
     res.send('Hello from Jenkins + Docker!');
 });
 
-// Listn thius test
+// Listn thius test tool
 app.listen(3000, () => {
     console.log('Server running on port 3000');
 });
