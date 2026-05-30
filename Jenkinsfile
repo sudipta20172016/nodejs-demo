@@ -3,6 +3,10 @@ pipeline {
 
     stages {
 
+        tools {
+            nodejs 'NodeJS 20'
+        }
+
         stage('Build Docker Image') {
             steps {
                 sh '''
