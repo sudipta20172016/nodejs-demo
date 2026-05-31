@@ -1,6 +1,9 @@
 pipeline {
-    agent any
-
+    agent {
+        docker {
+            image 'mcr.microsoft.com/azure-cli:latest'
+        }
+    }
      tools {
         nodejs 'NodeJS 26'
     }
@@ -36,10 +39,7 @@ pipeline {
                     string(credentialsId: 'AZ_TENANT_ID', variable: 'AZ_TENANT_ID')
                 ]) {
                     sh '''
-                    az login --service-principal \
-                    -u $AZ_CLIENT_ID \
-                    -p $AZ_CLIENT_SECRET \
-                    --tenant $AZ-TENANT-ID
+                    az login --service-principal -u "%AZ_CLIENT_ID%" -p "%AZ_CLIENT_SECRET%" --tenant "%AZ_TENANT_ID%
 
                     az login --name sudiptaacr001
 
