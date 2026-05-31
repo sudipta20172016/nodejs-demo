@@ -13,7 +13,7 @@ env:
   ACR_NAME: sudiptaacr001
   ACR_LOGIN_SERVER: sudiptaacr001.azurecr.io
   IMAGE_NAME: nodejs-demo
-  CONTAINER_APP_NAME: nodejs-app
+  CONTAINER_APP_NAME: nodejs-demo
   RESOURCE_GROUP: aks-demo-rg
 
 jobs:
