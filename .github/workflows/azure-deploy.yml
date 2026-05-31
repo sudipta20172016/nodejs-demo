@@ -54,9 +54,43 @@ jobs:
           docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.build_version }}
           docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest
 
+      - name: Capture current deployed image
+        id: current-deployment
+        run: |
+          PREVIOUS_IMAGE=$(az containerapp show \
+            --name ${{ env.CONTAINER_APP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --query "properties.template.containers[0].image" \
+            -o tsv)
+          echo "previous_image=$PREVIOUS_IMAGE" >> "$GITHUB_OUTPUT"
+          echo "Previous image: $PREVIOUS_IMAGE"
+
       - name: Deploy to Azure Container Apps
+        id: deploy
         run: |
           az containerapp update \
             --name ${{ env.CONTAINER_APP_NAME }} \
             --resource-group ${{ env.RESOURCE_GROUP }} \
             --image ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.build_version }}
+
+      - name: Verify latest deployment
+        run: |
+          PROVISIONING_STATE=$(az containerapp show \
+            --name ${{ env.CONTAINER_APP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --query "properties.provisioningState" \
+            -o tsv)
+
+          if [ "$PROVISIONING_STATE" != "Succeeded" ]; then
+            echo "Deployment provisioning state is $PROVISIONING_STATE"
+            exit 1
+          fi
+
+      - name: Roll back to previous image
+        if: failure() && steps.current-deployment.outputs.previous_image != ''
+        run: |
+          echo "Rolling back to ${{ steps.current-deployment.outputs.previous_image }}"
+          az containerapp update \
+            --name ${{ env.CONTAINER_APP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --image ${{ steps.current-deployment.outputs.previous_image }}
