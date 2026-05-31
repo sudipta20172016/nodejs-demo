@@ -9,43 +9,57 @@ pipeline {
 
        
 
-        stage('Build Docker Image') {
+        stage('Build Image') {
             steps {
-                sh '''
-                APP_VERSION=$(node -p "require('./package.json').version")
-                BUILD_VERSION=$APP_VERSION-$BUILD_NUMBER
-                docker build --build-arg APP_VERSION=$BUILD_VERSION -t nodejs-demo:$BUILD_VERSION -t nodejs-demo:latest .
-                '''
+                sh 'docker build -t nodejs-demo:latest .'
             }
         }
 
-        stage('Deploy Container') {
+        stage('Run Locally') {
             steps {
                 sh '''
                 docker stop nodejs-demo || true
                 docker rm nodejs-demo || true
 
-                docker run -d \
-                --name nodejs-demo \
-                -p 3000:3000 \
-                nodejs-demo:latest
+                docker run -d --name nodejs-demo -p 3000:3000 nodejs-demo:latest
                 '''
             }
         }
 
-        stage('Save Last Working Version') {
+        
+
+        stage('Push to ACR') {
             steps {
-                script {
-                def lastWorkingCommit = sh(
-                    script: 'git rev-parse HEAD',
-                    returnStdout: true
-                ).trim()
+                withCredentials([
+                    string(credentialsId: 'AZ_CLIENT_ID', variable: 'AZ_CLIENT_ID'),
+                    string(credentialsId: 'AZ_CLIENT_SECRET', variable: 'AZ_CLIENT_SECRET'),
+                    string(credentialsId: 'AZ_TENANT_ID', variable: 'AZ_TENANT_ID')
+                ]) {
+                    sh '''
+                    az login --service-principal \
+                    -u $AZ_CLIENT_ID \
+                    -p $AZ-PASSWORD \
+                    --tenant $AZ-TENANT-ID
 
-                writeFile file: 'last-working-git-ref.txt', text: lastWorkingCommit
-                archiveArtifacts artifacts: 'last-working-git-ref.txt', fingerprint: true
+                    az login --name sudiptaacr001
 
-                echo "Last working Git ref saved: ${lastWorkingCommit}"
+                    docker tag nodejs-demo:latest sudiptaacr001.azurecr.io/nodejs-demo:latest
+                    docker push sudiptaacr001.azurecr.io/nodejs-demo:latest
+                    '''
                 }
+            }
+                
+            
+        }
+
+        stage('Deploy to Azure Container Apps') {
+            steps {
+                sh '''
+                az containerapp update \
+                --name nodejs-app \
+                --resource-group aca-demo-rg \
+                --image sudiptaacr001.azurecr.io/nodejs-demo:latest
+                '''
             }
         }
     
