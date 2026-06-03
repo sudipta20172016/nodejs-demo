@@ -17,6 +17,22 @@ app.get('/version', (req, res) => {
     });
 });
 
+app.get("/call-user-test", async (req, res) => {
+  try {
+    const response = await fetch(`${process.env.USER_SERVICE_URL}/users/test`);
+
+    if (!response.ok) {
+      throw new Error(`User service returned ${response.status}`);
+    }
+
+    const data = await response.text();
+    res.send(data);
+  } catch (error) {
+    console.error("Error calling user-service:", error);
+    res.status(500).send("Failed to call user-service");
+  }
+});
+
 // Listn thius test tool new build one more
 app.listen(port, () => {
     console.log(`Server running on port ${port}, version Test ${appVersion}`);
